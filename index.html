@@ -1,0 +1,244 @@
+
+<!DOCTYPE html>
+<html lang="de" class="dark">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>SEROS - Aufwandserfassung</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        darkMode: 'class',
+        theme: {
+          extend: {
+            colors: {
+              primary: {
+                50: '#eff6ff',
+                100: '#dbeafe',
+                200: '#bfdbfe',
+                300: '#93c5fd',
+                400: '#60a5fa',
+                500: '#3b82f6',
+                600: '#2563eb',
+                700: '#1d4ed8',
+                800: '#1e40af',
+                900: '#1e3a8a',
+                950: '#172554',
+              },
+            },
+            backdropBlur: {
+              xs: '2px',
+            }
+          },
+        },
+      }
+    </script>
+    <style>
+      @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+      body {
+        font-family: 'Inter', sans-serif;
+        overflow-x: hidden;
+      }
+      .login-gradient {
+        background: radial-gradient(circle at 10% 20%, rgba(91, 44, 121, 1) 0%, rgba(27, 21, 51, 1) 90%);
+      }
+      /* Hide scrollbar for Chrome, Safari and Opera */
+      .no-scrollbar::-webkit-scrollbar {
+        display: none;
+      }
+      /* Hide scrollbar for IE, Edge and Firefox */
+      .no-scrollbar {
+        -ms-overflow-style: none;  /* IE and Edge */
+        scrollbar-width: none;  /* Firefox */
+      }
+      
+      .glass {
+        background: rgba(255, 255, 255, 0.05);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+      }
+      
+      .glass-card {
+        background: rgba(255, 255, 255, 0.03);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        border: 1px solid rgba(255, 255, 255, 0.15);
+        box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+      }
+
+      /* Shiny CTA Button */
+      @property --gradient-angle {
+        syntax: "<angle>";
+        initial-value: 0deg;
+        inherits: false;
+      }
+      @property --gradient-angle-offset {
+        syntax: "<angle>";
+        initial-value: 0deg;
+        inherits: false;
+      }
+      @property --gradient-percent {
+        syntax: "<percentage>";
+        initial-value: 20%;
+        inherits: false;
+      }
+      @property --gradient-shine {
+        syntax: "<color>";
+        initial-value: #8484ff;
+        inherits: false;
+      }
+      
+      .shiny-cta {
+        --gradient-angle: 0deg;
+        --gradient-angle-offset: 0deg;
+        --gradient-percent: 20%;
+        --gradient-shine: #8484ff;
+        --shadow-size: 2px;
+        position: relative;
+        overflow: hidden;
+        border-radius: 9999px;
+        padding: 1rem 2.5rem;
+        font-size: 0.875rem;
+        line-height: 1.2;
+        font-weight: 800;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: #ffffff;
+        background: linear-gradient(#000000, #000000) padding-box,
+          conic-gradient(
+            from calc(var(--gradient-angle) - var(--gradient-angle-offset)),
+            transparent 0%,
+            #1d4ed8 5%,
+            var(--gradient-shine) 15%,
+            #1d4ed8 30%,
+            transparent 40%,
+            transparent 100%
+          ) border-box;
+        border: 2px solid transparent;
+        box-shadow: inset 0 0 0 1px #1a1818;
+        outline: none;
+        transition: --gradient-angle-offset 800ms cubic-bezier(0.25, 1, 0.5, 1),
+          --gradient-percent 800ms cubic-bezier(0.25, 1, 0.5, 1),
+          --gradient-shine 800ms cubic-bezier(0.25, 1, 0.5, 1),
+          box-shadow 0.3s;
+        cursor: pointer;
+        isolation: isolate;
+        outline-offset: 4px;
+        font-family: 'Inter', 'Helvetica Neue', sans-serif;
+        z-index: 0;
+        animation: border-spin 2.5s linear infinite;
+      }
+      
+      @keyframes border-spin {
+        to {
+          --gradient-angle: 360deg;
+        }
+      }
+      
+      .shiny-cta:active {
+        transform: translateY(1px);
+      }
+      
+      .shiny-cta::before {
+        content: '';
+        pointer-events: none;
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        transform: translate(-50%, -50%);
+        z-index: 0;
+        --size: calc(100% - 6px);
+        --position: 2px;
+        --space: 4px;
+        width: var(--size);
+        height: var(--size);
+        background: radial-gradient(circle at var(--position) var(--position), white 0.5px, transparent 0) padding-box;
+        background-size: var(--space) var(--space);
+        background-repeat: space;
+        mask-image: conic-gradient(
+          from calc(var(--gradient-angle) + 45deg),
+          black,
+          transparent 10% 90%,
+          black
+        );
+        border-radius: inherit;
+        opacity: 0.4;
+        pointer-events: none;
+      }
+      
+      .shiny-cta::after {
+        content: '';
+        pointer-events: none;
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        transform: translate(-50%, -50%);
+        z-index: 1;
+        width: 100%;
+        aspect-ratio: 1;
+        background: linear-gradient(-50deg, transparent, #1d4ed8, transparent);
+        mask-image: radial-gradient(circle at bottom, transparent 40%, black);
+        opacity: 0.6;
+        animation: shimmer 4s linear infinite;
+        animation-play-state: running;
+      }
+      
+      .shiny-cta span {
+        position: relative;
+        z-index: 2;
+        display: inline-block;
+      }
+      
+      .shiny-cta span::before {
+        content: '';
+        pointer-events: none;
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        transform: translate(-50%, -50%);
+        z-index: -1;
+        --size: calc(100% + 1rem);
+        width: var(--size);
+        height: var(--size);
+        box-shadow: inset 0 -1ex 2rem 4px #1d4ed8;
+        opacity: 0;
+        border-radius: inherit;
+        transition: opacity 800ms cubic-bezier(0.25, 1, 0.5, 1);
+        animation: breathe 4.5s linear infinite;
+      }
+      
+      @keyframes shimmer {
+        to {
+          transform: translate(-50%, -50%) rotate(360deg);
+        }
+      }
+      
+      @keyframes breathe {
+        0%, 100% {
+          transform: translate(-50%, -50%) scale(1);
+        }
+        50% {
+          transform: translate(-50%, -50%) scale(1.20);
+        }
+      }
+    </style>
+  <script type="importmap">
+{
+  "imports": {
+    "react/": "https://esm.sh/react@^19.2.3/",
+    "react": "https://esm.sh/react@^19.2.3",
+    "recharts": "https://esm.sh/recharts@^3.6.0",
+    "react-dom/": "https://esm.sh/react-dom@^19.2.3/",
+    "date-fns/": "https://esm.sh/date-fns@^4.1.0/",
+    "date-fns": "https://esm.sh/date-fns@^4.1.0"
+  }
+}
+</script>
+<link rel="stylesheet" href="/index.css">
+</head>
+  <body class="bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 transition-colors duration-300 min-h-screen">
+    <div id="root"></div>
+  <script type="module" src="/index.tsx"></script>
+</body>
+</html>
