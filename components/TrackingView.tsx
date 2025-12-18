@@ -29,11 +29,13 @@ const TrackingView: React.FC<TrackingViewProps> = ({
   const [baseDate, setBaseDate] = useState(startOfToday());
   const [activeSplitIndex, setActiveSplitIndex] = useState(0);
   const [showConfirm, setShowConfirm] = useState(false);
+  // Track if we've already processed the initialCardId to avoid re-applying it on every render
+  const [initialCardProcessed, setInitialCardProcessed] = useState(false);
 
   const splits = useMemo(() => getSplitWeekData(baseDate), [baseDate]);
   
   useEffect(() => {
-    if (initialCardId) {
+    if (initialCardId && !initialCardProcessed) {
       const card = existingCards.find(c => c.id === initialCardId);
       if (card) {
         const date = parseISO(card.startDate);
@@ -41,9 +43,17 @@ const TrackingView: React.FC<TrackingViewProps> = ({
         const cardSplits = getSplitWeekData(date);
         const idx = cardSplits.findIndex(s => s.start.toISOString() === card.startDate);
         if (idx >= 0) setActiveSplitIndex(idx);
+        setInitialCardProcessed(true);
       }
     }
-  }, [initialCardId, existingCards]);
+  }, [initialCardId, existingCards, initialCardProcessed]);
+  
+  // Reset initialCardProcessed when initialCardId changes (e.g., new card selected from Bookings)
+  useEffect(() => {
+    if (!initialCardId) {
+      setInitialCardProcessed(false);
+    }
+  }, [initialCardId]);
 
   const currentSplit = splits[activeSplitIndex] || splits[0];
   const [rows, setRows] = useState<TimeEntry[]>([]);
@@ -53,21 +63,16 @@ const TrackingView: React.FC<TrackingViewProps> = ({
   const isReadOnly = status === BookingStatus.SUBMITTED || status === BookingStatus.APPROVED;
 
   useEffect(() => {
-    // First try to find by initialCardId if provided
-    let existing = initialCardId ? existingCards.find(c => c.id === initialCardId) : null;
+    // Find timecard by date range for current split (ignore initialCardId after initial load)
+    const existing = existingCards.find(c => {
+      const cardStart = new Date(c.startDate).toDateString();
+      const cardEnd = new Date(c.endDate).toDateString();
+      const splitStart = currentSplit.start.toDateString();
+      const splitEnd = currentSplit.end.toDateString();
+      return c.userId === user.id && cardStart === splitStart && cardEnd === splitEnd;
+    });
     
-    // If not found by ID, try to find by date range
-    if (!existing) {
-      existing = existingCards.find(c => {
-        const cardStart = new Date(c.startDate).toDateString();
-        const cardEnd = new Date(c.endDate).toDateString();
-        const splitStart = currentSplit.start.toDateString();
-        const splitEnd = currentSplit.end.toDateString();
-        return c.userId === user.id && cardStart === splitStart && cardEnd === splitEnd;
-      });
-    }
-    
-    console.log('Loading TimeCard:', existing);
+    console.log('Loading TimeCard for split:', currentSplit.label, existing);
     console.log('Entries:', existing?.entries);
     
     if (existing) {
@@ -91,7 +96,7 @@ const TrackingView: React.FC<TrackingViewProps> = ({
       setStatus(BookingStatus.OPEN);
       setRejectionReason(undefined);
     }
-  }, [currentSplit, existingCards, initialCardId, user.id]);
+  }, [currentSplit, existingCards, user.id]);
 
   const addRow = () => {
     if (isReadOnly) return;
@@ -131,18 +136,14 @@ const TrackingView: React.FC<TrackingViewProps> = ({
   };
 
   const handleFinalSubmit = () => {
-    // Check if there's an existing card for this period (by ID first, then by date)
-    let existing = initialCardId ? existingCards.find(c => c.id === initialCardId) : null;
-    
-    if (!existing) {
-      existing = existingCards.find(c => {
-        const cardStart = new Date(c.startDate).toDateString();
-        const cardEnd = new Date(c.endDate).toDateString();
-        const splitStart = currentSplit.start.toDateString();
-        const splitEnd = currentSplit.end.toDateString();
-        return c.userId === user.id && cardStart === splitStart && cardEnd === splitEnd;
-      });
-    }
+    // Check if there's an existing card for this period by date range
+    const existing = existingCards.find(c => {
+      const cardStart = new Date(c.startDate).toDateString();
+      const cardEnd = new Date(c.endDate).toDateString();
+      const splitStart = currentSplit.start.toDateString();
+      const splitEnd = currentSplit.end.toDateString();
+      return c.userId === user.id && cardStart === splitStart && cardEnd === splitEnd;
+    });
     
     const card: TimeCard = {
       id: existing?.id || generateUUID(),
